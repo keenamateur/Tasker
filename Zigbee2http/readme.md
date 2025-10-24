@@ -3,6 +3,12 @@
 
 This Node-RED flow processes status updates from Zigbee2MQTT (Z2M) via MQTT and translates them into custom HTTP GET requests for a connected home automation system. It also handles initial IP configuration and includes a simple motion-based lighting automation.
 
+
+### Node-RED Setup
+<div style="display: flex; gap: 20px;">
+  <img src="/images/zgb2http.png" alt="zgb2http" width="95%"/>
+</div>
+
 ## Features
 
 *   **Global IP Configuration:** Reads/writes the `con_ip` to a file (`media/con_ip`) and stores it as a global flow variable (`global.con_ip`) for use in all subsequent HTTP requests.
