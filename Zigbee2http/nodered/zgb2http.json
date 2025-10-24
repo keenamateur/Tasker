@@ -1,0 +1,818 @@
+[
+    {
+        "id": "e58d7df5b51fa36d",
+        "type": "tab",
+        "label": "Z2MQTT",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "444033e41f838373",
+        "type": "change",
+        "z": "e58d7df5b51fa36d",
+        "d": true,
+        "name": "device_status",
+        "rules": [
+            {
+                "t": "set",
+                "p": "con_ip",
+                "pt": "global",
+                "to": "payload",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 900,
+        "y": 160,
+        "wires": [
+            [
+                "00d18babb733d054"
+            ]
+        ]
+    },
+    {
+        "id": "f8e8d75729aba66e",
+        "type": "file",
+        "z": "e58d7df5b51fa36d",
+        "d": true,
+        "name": "write_con_ip",
+        "filename": "media/con_ip",
+        "filenameType": "str",
+        "appendNewline": false,
+        "createDir": true,
+        "overwriteFile": "true",
+        "encoding": "none",
+        "x": 490,
+        "y": 160,
+        "wires": [
+            [
+                "f5f68cc371598256"
+            ]
+        ]
+    },
+    {
+        "id": "e41f355630c52655",
+        "type": "mqtt in",
+        "z": "e58d7df5b51fa36d",
+        "d": true,
+        "name": "con_ip-mqtt:52888",
+        "topic": "client/con_ip",
+        "qos": "2",
+        "datatype": "auto-detect",
+        "broker": "4644b114d998fd7b",
+        "nl": false,
+        "rap": false,
+        "rh": "2",
+        "inputs": 0,
+        "x": 270,
+        "y": 160,
+        "wires": [
+            [
+                "f8e8d75729aba66e"
+            ]
+        ]
+    },
+    {
+        "id": "898d6fa51e92d32a",
+        "type": "inject",
+        "z": "e58d7df5b51fa36d",
+        "d": true,
+        "name": "Inject IP",
+        "props": [],
+        "repeat": "90",
+        "crontab": "",
+        "once": true,
+        "onceDelay": 0.1,
+        "topic": "",
+        "x": 500,
+        "y": 120,
+        "wires": [
+            [
+                "f5f68cc371598256"
+            ]
+        ]
+    },
+    {
+        "id": "f5f68cc371598256",
+        "type": "file in",
+        "z": "e58d7df5b51fa36d",
+        "d": true,
+        "name": "read_con_ip",
+        "filename": "media/con_ip",
+        "filenameType": "str",
+        "format": "utf8",
+        "chunk": false,
+        "sendError": false,
+        "encoding": "utf8",
+        "allProps": false,
+        "x": 690,
+        "y": 160,
+        "wires": [
+            [
+                "444033e41f838373"
+            ]
+        ]
+    },
+    {
+        "id": "00d18babb733d054",
+        "type": "debug",
+        "z": "e58d7df5b51fa36d",
+        "d": true,
+        "name": "con_ip",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1090,
+        "y": 160,
+        "wires": []
+    },
+    {
+        "id": "cc34d8cb2e291620",
+        "type": "http request",
+        "z": "e58d7df5b51fa36d",
+        "d": true,
+        "name": "ZigBee ",
+        "method": "GET",
+        "ret": "txt",
+        "paytoqs": "body",
+        "url": "",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": true,
+        "authType": "",
+        "senderr": true,
+        "headers": [
+            {
+                "keyType": "Content-Type",
+                "keyValue": "",
+                "valueType": "application/json",
+                "valueValue": ""
+            }
+        ],
+        "x": 1080,
+        "y": 640,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "14a85a3f360ae88c",
+        "type": "debug",
+        "z": "e58d7df5b51fa36d",
+        "d": true,
+        "name": "single_ac",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1060,
+        "y": 600,
+        "wires": []
+    },
+    {
+        "id": "c2e7725e0408e1ef",
+        "type": "function",
+        "z": "e58d7df5b51fa36d",
+        "d": true,
+        "name": "single ac",
+        "func": " if (!msg.topic || typeof msg.topic !== \"string\") {\n    return null;\n}\n\nconst topicParts = msg.topic.split('/');\nif (topicParts.length !== 4 || topicParts[0] !== \"gtl\") {\n    return null;\n}\n\nconst room = topicParts[2];\nconst avdevicename = topicParts[3]; \nconst type = \"power\";\n\nconst deviceName = topicParts[3];\nconst knownDualDevices = [\"HDD1\", \"HDD2\", \"Dimmer\", \"DualSwitch\", \"TöltőZgb\"]; // Add ide az összes dupla eszköz nevet\n// Filter for conflicting (multichanel)devices to avoid redundacy \nif (knownDualDevices.includes(deviceName)) {\n    return null;\n}\n\nconst allowedRooms = [\"GTL\", \"Nappali\", \"Konyha\", \"Fürdő\", \"Háló\", \"Terasz\", \"Biztonság\", \"Műhely\", \"Garázs\", \"Áram\", \"Szerver\", \"Sátor\"];\n\nif (!allowedRooms.includes(room)) {\n    return null;\n}\n\nif (!msg.payload || typeof msg.payload !== \"object\" || !msg.payload.state) {\n    return null;\n}\n\nlet avnewstatus;\nif (msg.payload.state === \"OFF\") {\n    avnewstatus = 0;\n} else if (msg.payload.state === \"ON\") {\n    avnewstatus = msg.payload.brightness !== undefined ? msg.payload.brightness : 100;\n} else {\n    return null;\n}\n\n\nlet port = 1905;\nlet ip = global.get(\"con_ip\");\n\nif (!ip || typeof ip !== \"string\" || !ip.match(/^(\\d{1,3}\\.){3}\\d{1,3}$/)) {\n    return null;\n}\n\nlet url = `http://${ip}:${port}`;\n\nreturn {\n    payload: {\n        room: room,\n        avdevicename: avdevicename,\n        avnewstatus: avnewstatus,\n        type: type\n    },\n    url: url,\n    _original: {\n        topic: msg.topic,\n        payload: msg.payload\n    }\n};",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 840,
+        "y": 640,
+        "wires": [
+            [
+                "cc34d8cb2e291620",
+                "14a85a3f360ae88c"
+            ]
+        ]
+    },
+    {
+        "id": "3dfb0a812bb5003d",
+        "type": "function",
+        "z": "e58d7df5b51fa36d",
+        "d": true,
+        "name": "sensor",
+        "func": "if (!msg.topic || typeof msg.topic !== \"string\") return null;\n\nconst topicParts = msg.topic.split('/');\nif (topicParts.length < 3 || topicParts[0] !== \"gtl\") return null;\n\nconst room = topicParts[2];\nconst avdevicename = topicParts[3];\n\nconst allowedRooms = [\"Biztonág\", \"MOVE\", \"DOOR\", \"GTL\", \"Nappali\", \"Konyha\", \"Fürdő\", \"Háló\", \"Terasz\", \"Biztonság\", \"Műhely\", \"Garázs\", \"Áram\", \"Szerver\", \"Sátor\", \"Raktár\"];\nif (!allowedRooms.includes(room)) return null;\n\nif (!msg.payload || typeof msg.payload !== \"object\") return null;\n\n// Humidity és temperature szenzor\nif (msg.payload.humidity !== undefined || msg.payload.temperature !== undefined) {\n    msg.sensorData = {\n        room: room,\n        avdevicename: avdevicename,\n        type: \"sensor\",\n        humidity: msg.payload.humidity,\n        temperature: msg.payload.temperature,\n        battery: msg.payload.battery\n    };\n    return msg;\n}\n\n// Contact szenzor (ajtó/ablak érzékelő)\nif (msg.payload.contact !== undefined) {\n    const statusContact = msg.payload.contact === true ? \"Zárva\" : \"Nyitva\";\n\n    msg.sensorData = {\n        room: room,\n        avdevicename: avdevicename,\n        type: \"contact\",\n        avnewstatus: statusContact,\n        battery: msg.payload.battery\n    };\n    return msg;\n}\n\n// Mozgásérzékelő Motionsensor\n\nif (msg.payload.occupancy !== undefined) {\n    const statusMotion = msg.payload.occupancy === true ? \"detected\" : \"cleared\";\n\n    msg.sensorData = {\n        room: room,\n        avdevicename: avdevicename,\n        type: \"motion\",\n        avnewstatus: statusMotion,\n        battery: msg.payload.battery,\n        voltage: msg.payload.voltage\n    };\n    return msg;\n}\n\nreturn null;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 670,
+        "y": 540,
+        "wires": [
+            [
+                "e588f1fabc521457"
+            ]
+        ]
+    },
+    {
+        "id": "dd5955e1e3ae63dc",
+        "type": "http request",
+        "z": "e58d7df5b51fa36d",
+        "d": true,
+        "name": "ZigBee ",
+        "method": "GET",
+        "ret": "txt",
+        "paytoqs": "body",
+        "url": "",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": true,
+        "authType": "",
+        "senderr": true,
+        "headers": [
+            {
+                "keyType": "Content-Type",
+                "keyValue": "",
+                "valueType": "application/json",
+                "valueValue": ""
+            }
+        ],
+        "x": 1080,
+        "y": 540,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "6a1a2d6ad4e46e74",
+        "type": "debug",
+        "z": "e58d7df5b51fa36d",
+        "d": true,
+        "name": "sensor",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1070,
+        "y": 500,
+        "wires": []
+    },
+    {
+        "id": "e588f1fabc521457",
+        "type": "function",
+        "z": "e58d7df5b51fa36d",
+        "d": true,
+        "name": "sensor f2",
+        "func": "if (!msg.sensorData) return null;\n\nlet port = 1905;\nlet ip = global.get(\"con_ip\");\n\nif (!ip || typeof ip !== \"string\" || !ip.match(/^(\\d{1,3}\\.){3}\\d{1,3}$/)) {\n    return null;\n}\n\nlet url = `http://${ip}:${port}`;\n\nreturn {\n    payload: msg.sensorData,\n    url: url,\n    _original: {\n        topic: msg.topic,\n        payload: msg.payload\n    }\n};",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 840,
+        "y": 540,
+        "wires": [
+            [
+                "6a1a2d6ad4e46e74",
+                "dd5955e1e3ae63dc"
+            ]
+        ]
+    },
+    {
+        "id": "c35d1feda9be889d",
+        "type": "http request",
+        "z": "e58d7df5b51fa36d",
+        "d": true,
+        "name": "ZigBee ",
+        "method": "GET",
+        "ret": "txt",
+        "paytoqs": "body",
+        "url": "",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": true,
+        "authType": "",
+        "senderr": true,
+        "headers": [
+            {
+                "keyType": "Content-Type",
+                "keyValue": "",
+                "valueType": "application/json",
+                "valueValue": ""
+            }
+        ],
+        "x": 1080,
+        "y": 740,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "d3d212562a1e0c0a",
+        "type": "debug",
+        "z": "e58d7df5b51fa36d",
+        "d": true,
+        "name": "dual_ac set",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1050,
+        "y": 700,
+        "wires": []
+    },
+    {
+        "id": "32d3211ffcb87f3a",
+        "type": "function",
+        "z": "e58d7df5b51fa36d",
+        "d": true,
+        "name": "dual ac /set",
+        "func": "// \"set\" -topic-ok feldolgozása\n\nif (!msg.topic || typeof msg.topic !== \"string\") {\n    return null;\n}\n\nconst topicParts = msg.topic.split('/');\nif (topicParts.length !== 6 || topicParts[0] !== \"gtl\" ||\n    ![\"l1\", \"l2\"].includes(topicParts[4]) || topicParts[5] !== \"set\" ||\n    topicParts[3] == \"Dimmer\") {\n    return null;\n}\n\nconst room = topicParts[2];\nconst baseDeviceName = topicParts[3];\nconst channel = topicParts[4];\nconst avdevicename = `${baseDeviceName}/${channel}`;\nconst type = \"power\";\n\nconst allowedRooms = [\"GTL\", \"Nappali\", \"Konyha\", \"Fürdő\", \"Háló\", \"Terasz\", \"Biztonság\", \"Műhely\", \"Garázs\", \"Áram\", \"Szerver\", \"Sátor\"];\n\nif (!allowedRooms.includes(room)) {\n    return null;\n}\n\n// STRING payload kezelése (/set topic-oknál)\nlet avnewstatus;\nif (typeof msg.payload === \"string\") {\n    if (msg.payload === \"OFF\" || msg.payload === \"off\") {\n        avnewstatus = \"OFF\";\n    } else if (msg.payload === \"ON\" || msg.payload === \"on\") {\n        avnewstatus = \"ON\";\n    } else {\n        return null;\n    }\n}\n// OBJECT payload kezelése\nelse if (typeof msg.payload === \"object\" && msg.payload.state) {\n    if (msg.payload.state === \"OFF\") {\n        avnewstatus = \"OFF\";\n    } else if (msg.payload.state === \"ON\") {\n        avnewstatus = \"ON\";\n    } else {\n        return null;\n    }\n}\nelse {\n    return null;\n}\n\nlet port = 1905;\nlet ip = global.get(\"con_ip\");\n\nif (!ip || typeof ip !== \"string\" || !ip.match(/^(\\d{1,3}\\.){3}\\d{1,3}$/)) {\n    return null;\n}\n\nlet url = `http://${ip}:${port}`;\n\nreturn {\n    payload: {\n        room: room,\n        avdevicename: avdevicename,\n        avnewstatus: avnewstatus,\n        type: type\n    },\n    url: url,\n    _original: {\n        topic: msg.topic,\n        payload: msg.payload\n    }\n};",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 850,
+        "y": 740,
+        "wires": [
+            [
+                "c35d1feda9be889d",
+                "d3d212562a1e0c0a"
+            ]
+        ]
+    },
+    {
+        "id": "466ce80cf97fab17",
+        "type": "mqtt in",
+        "z": "e58d7df5b51fa36d",
+        "d": true,
+        "name": "zigbee2mqtt01 devices",
+        "topic": "gtl/gtl/#",
+        "qos": "2",
+        "datatype": "auto-detect",
+        "broker": "4644b114d998fd7b",
+        "nl": false,
+        "rap": false,
+        "rh": "2",
+        "inputs": 0,
+        "x": 280,
+        "y": 540,
+        "wires": [
+            [
+                "8cdb88f80a21d55c"
+            ]
+        ]
+    },
+    {
+        "id": "8ffcd17ee4df3baa",
+        "type": "mqtt in",
+        "z": "e58d7df5b51fa36d",
+        "d": true,
+        "name": "flat",
+        "topic": "gtl/bridge/devices",
+        "qos": "2",
+        "datatype": "auto-detect",
+        "broker": "4644b114d998fd7b",
+        "nl": false,
+        "rap": true,
+        "rh": "2",
+        "inputs": 0,
+        "x": 230,
+        "y": 240,
+        "wires": [
+            [
+                "db21ea3052fa7f72",
+                "af32763d75361ee4"
+            ]
+        ]
+    },
+    {
+        "id": "db21ea3052fa7f72",
+        "type": "function",
+        "z": "e58d7df5b51fa36d",
+        "d": true,
+        "name": "ZigBee_read_data",
+        "func": "if (!msg.payload || !Array.isArray(msg.payload)) {\n    return null;\n}\n\nconst allowedRooms = [\"GTL\", \"Nappali\", \"Konyha\", \"Fürdő\", \"Háló\", \"Terasz\", \"Biztonság\", \"Műhely\", \"Garázs\", \"Áram\", \"Szerver\", \"Sátor\"];\nconst devices = [];\n\nmsg.payload.forEach(device => {\n    if (!device.friendly_name || !device.supported) return;\n    \n    \n    const match = device.friendly_name.match(/^([^\\/]+)\\/(.+)$/);\n    \n   // const match = device.friendly_name.match(/^\\/(.+)$/);\n   // const match = device.friendly_name.match(/^([^_]+)_(.+)$/);\n    if (!match) return;\n\n    const room = match[1];\n    const deviceName = match[2];\n\n    if (!allowedRooms.includes(room)) return;\n\n    const type = device.type || \"Router\";\n    const status = device.available ? \"online\" : \"offline\";\n\n    let rgbValue = null;\n    if (device.definition?.exposes) {\n        const hasColor = device.definition.exposes.some(e =>\n            e.property === \"color\" || e.name === \"color_xy\" ||\n            (e.features && e.features.some(f => f.name && f.name.includes(\"color\")))\n        );\n        if (hasColor) rgbValue = \"color_supported\";\n    }\n\n    // Endpoint-ok kinyerése\n    const endpoints = [];\n    if (device.definition?.exposes) {\n        device.definition.exposes.forEach(expose => {\n            if (expose.endpoint && expose.features) {\n                endpoints.push({\n                    endpoint: expose.endpoint,\n                    type: expose.type,\n                    features: expose.features.map(f => f.name || f.property)\n                });\n            }\n        });\n    }\n\n    // Fő eszköz hozzáadása with  full name\n    devices.push({\n        room: room,\n        name: device.friendly_name,\n        type: type,\n        status: status,\n        rgb: rgbValue,\n        endpoints: endpoints,\n        endpoint_count: endpoints.length,\n        is_main_device: true\n    });\n\n    // Endpoint-ok külön entitásként hozzáadása\n    endpoints.forEach(endpoint => {\n        const endpointName = `${device.friendly_name}/${endpoint.endpoint}`; // \"room_devicename/l1\"\n        devices.push({\n            room: room,\n            name: endpointName,\n            type: `${endpoint.type}_${type}`,\n            status: status,\n            rgb: rgbValue,\n            endpoints: [endpoint],\n            endpoint_count: 1,\n            is_endpoint: true,\n            parent_device: device.friendly_name  // Zentral device name\n        });\n    });\n});\n\nreturn {\n    payload: {\n        timestamp: new Date().toISOString(),\n        devices: devices,\n        total_devices: devices.length,\n        summary: {\n            by_room: devices.reduce((acc, device) => {\n                acc[device.room] = (acc[device.room] || 0) + 1;\n                return acc;\n            }, {}),\n            by_type: devices.reduce((acc, device) => {\n                acc[device.type] = (acc[device.type] || 0) + 1;\n                return acc;\n            }, {})\n        }\n    }\n};",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 510,
+        "y": 300,
+        "wires": [
+            [
+                "983870466f1a84a8",
+                "4e9c0d8bd3a1a8be"
+            ]
+        ]
+    },
+    {
+        "id": "4e9c0d8bd3a1a8be",
+        "type": "debug",
+        "z": "e58d7df5b51fa36d",
+        "d": true,
+        "name": "z2mqtt_read_data",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 770,
+        "y": 260,
+        "wires": []
+    },
+    {
+        "id": "1171109fcf5fc93d",
+        "type": "http request",
+        "z": "e58d7df5b51fa36d",
+        "d": true,
+        "name": " z2mqtt_data_full_http",
+        "method": "use",
+        "ret": "txt",
+        "paytoqs": "body",
+        "url": "",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": true,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 1040,
+        "y": 300,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "983870466f1a84a8",
+        "type": "function",
+        "z": "e58d7df5b51fa36d",
+        "d": true,
+        "name": "preset_ip",
+        "func": "// Preapir for HTTP\nlet jsonData = msg.payload;\n\n// Port\nlet port = '1904';\n\n// Set IP \nlet ip = global.get(\"con_ip\"); // || \"10.10.50.2\";\n\n// Create URL\nlet url = `http://${ip}:${port}`;\n\n// Create new message\nlet newMsg = {\n    payload: jsonData,\n    headers: {\n        \"Content-Type\": \"application/json\"\n    },\n    method: \"GET\", // set request type\n    url: url\n};\n\n// return new message\nreturn newMsg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 740,
+        "y": 300,
+        "wires": [
+            [
+                "1171109fcf5fc93d"
+            ]
+        ]
+    },
+    {
+        "id": "af32763d75361ee4",
+        "type": "debug",
+        "z": "e58d7df5b51fa36d",
+        "d": true,
+        "name": "zigbee_full_data_raw",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 520,
+        "y": 260,
+        "wires": []
+    },
+    {
+        "id": "baebc7b62761c5cc",
+        "type": "mqtt in",
+        "z": "e58d7df5b51fa36d",
+        "d": true,
+        "name": "basement",
+        "topic": "gtl/basement//bridge/devices",
+        "qos": "2",
+        "datatype": "auto-detect",
+        "broker": "4644b114d998fd7b",
+        "nl": false,
+        "rap": false,
+        "rh": "2",
+        "inputs": 0,
+        "x": 240,
+        "y": 320,
+        "wires": [
+            [
+                "db21ea3052fa7f72",
+                "af32763d75361ee4"
+            ]
+        ]
+    },
+    {
+        "id": "8142d1dbc8290247",
+        "type": "http request",
+        "z": "e58d7df5b51fa36d",
+        "d": true,
+        "name": "ZigBee ",
+        "method": "GET",
+        "ret": "txt",
+        "paytoqs": "body",
+        "url": "",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [
+            {
+                "keyType": "Content-Type",
+                "keyValue": "",
+                "valueType": "application/json",
+                "valueValue": ""
+            }
+        ],
+        "x": 1080,
+        "y": 440,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "3e318d468d03ac12",
+        "type": "debug",
+        "z": "e58d7df5b51fa36d",
+        "d": true,
+        "name": "dual",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1070,
+        "y": 400,
+        "wires": []
+    },
+    {
+        "id": "8cdb88f80a21d55c",
+        "type": "function",
+        "z": "e58d7df5b51fa36d",
+        "d": true,
+        "name": "FILTER1",
+        "func": "\nif (msg.topic && msg.topic.includes('gtl/flat/bridge/logging')) {\n    return null;\n}\n\nif (msg.topic && msg.topic.includes('gtl/basement/bridge/logging')) {\n    return null;\n}\n\nif (!msg.topic || typeof msg.topic !== \"string\") {\n    return null;\n}\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 480,
+        "y": 540,
+        "wires": [
+            [
+                "c2e7725e0408e1ef",
+                "32d3211ffcb87f3a",
+                "3dfb0a812bb5003d",
+                "8fbc808fc5d46213",
+                "b3da77b990f29db1"
+            ]
+        ]
+    },
+    {
+        "id": "8fbc808fc5d46213",
+        "type": "debug",
+        "z": "e58d7df5b51fa36d",
+        "d": true,
+        "name": "filter",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 670,
+        "y": 500,
+        "wires": []
+    },
+    {
+        "id": "b3da77b990f29db1",
+        "type": "function",
+        "z": "e58d7df5b51fa36d",
+        "d": true,
+        "name": "dual Dimmer",
+        "func": "if (!msg.topic || typeof msg.topic !== \"string\") {\n    return null;\n}\n\nconst topicParts = msg.topic.split('/');\nif (topicParts.length < 5 || topicParts[0] !== \"gtl\") {\n    return null;\n}\n\n//const deviceParts = topicParts[1].split('_');\n//if (deviceParts.length < 2) {\n//    return null;\n//}\n\nconst room = topicParts[2]; //\n\nconst allowedRooms = [\"Nappali\", \"Konyha\", \"Fürdő\", \"Háló\", \"Terasz\", \"Biztonság\", \"Műhely\", \"Garázs\", \"Áram\", \"Szerver\", \"Sátor\"];\n\nif (!allowedRooms.includes(room)) {\n    return null;\n}\n\nconst tmpdevicename = topicParts[3];\n\n// Configuration\nconst DEVICE_FILTER_CONFIG = {\n    patterns: /(l1|l2)/i, // Matches l1 or l2 in topicParts[4]\n    allowedDevices: new Set([\"l1\", \"l2\"])\n};\n\n// Check conditions\nconst matchesPattern = DEVICE_FILTER_CONFIG.patterns.test(topicParts[4]); // Check the endpoint (l1/l2)\nconst isAllowed = DEVICE_FILTER_CONFIG.allowedDevices.has(tmpdevicename); // Check the device name\n\nif (!(matchesPattern || isAllowed)) {\n    return null;\n}\n\nconst avdevicename = `${topicParts[3]}/${topicParts[4]}`; // \"TöltőZgb_l1\"\nconst type = \"dimmer\";\n\nif (!msg.payload || typeof msg.payload !== \"object\" || !msg.payload.state) {\n    return null;\n}\n\nlet avnewstatus;\nif (msg.payload.state === \"OFF\") {\n    avnewstatus = 0;\n} else if (msg.payload.state === \"ON\") {\n    // Ensure brightness is defined and valid\n    avnewstatus = (msg.payload.brightness !== undefined && msg.payload.brightness !== null)\n        ? msg.payload.brightness\n        : 100;\n} else {\n    return null;\n}\n\n// additional validation to prevent undefined values\nif (avnewstatus === undefined || avnewstatus === null) {\n    return null;\n}\nlet port = 1905;\nlet ip = global.get(\"con_ip\");\n\nif (!ip || typeof ip !== \"string\" || !ip.match(/^(\\d{1,3}\\.){3}\\d{1,3}$/)) {\n    return null;\n}\n\n\nlet url = `http://${ip}:${port}`;\n\nreturn {\n    payload: {\n        room: room,\n        avdevicename: avdevicename,\n        avnewstatus: avnewstatus,\n        type: type\n    },\n    url: url,\n    _original: {\n        topic: msg.topic,\n        payload: msg.payload\n    }\n};\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 690,
+        "y": 440,
+        "wires": [
+            [
+                "89a3e17d17ff4cfb"
+            ]
+        ]
+    },
+    {
+        "id": "89a3e17d17ff4cfb",
+        "type": "function",
+        "z": "e58d7df5b51fa36d",
+        "d": true,
+        "name": "dual dimmer f2",
+        "func": "// Initialize cache if it doesn't exist\nflow.set('device_status_cache', flow.get('device_status_cache') || {});\n\n// Get current device status from the message\nconst deviceName = msg.payload.avdevicename;\nconst newStatus = msg.payload.avnewstatus;\n\n// Get current cache\nconst cache = flow.get('device_status_cache');\n\n// Check for a previous state for this device\nif (cache[deviceName]) {\n    // If the state hasn't changed, filter out this message\n    if (cache[deviceName].status === newStatus) {\n        return null;\n    }\n}\n\n// Update cache with new state (regardless of whether it was in cache before)\ncache[deviceName] = {\n    timestamp: Date.now(),\n    status: newStatus\n};\nflow.set('device_status_cache', cache);\n\n// IP and port handling\nlet port = 1905;\nlet ip = global.get(\"con_ip\");\n\n// Validate IP address\nif (!ip || typeof ip !== \"string\" || !ip.match(/^(\\d{1,3}\\.){3}\\d{1,3}$/)) {\n    return null;\n}\n\n// Coreate output message\nlet url = `http://${ip}:${port}`;\n\n// Return the original payload structure with URL\nreturn {\n    payload: {\n        room: msg.payload.room,\n        avdevicename: deviceName,\n        avnewstatus: newStatus,\n        type: msg.payload.type\n    },\n    url: url,\n    // Optional: keep original data for debug\n    _original: {\n        topic: msg.topic,\n        payload: msg.payload\n    }\n};",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 860,
+        "y": 440,
+        "wires": [
+            [
+                "3e318d468d03ac12",
+                "8142d1dbc8290247"
+            ]
+        ]
+    },
+    {
+        "id": "fcb8d26b9cb78553",
+        "type": "mqtt in",
+        "z": "e58d7df5b51fa36d",
+        "name": "trigger devices",
+        "topic": "gtl/gtl/Biztonság/#",
+        "qos": "2",
+        "datatype": "auto-detect",
+        "broker": "4644b114d998fd7b",
+        "nl": false,
+        "rap": false,
+        "rh": "2",
+        "inputs": 0,
+        "x": 260,
+        "y": 860,
+        "wires": [
+            [
+                "4012312d042dec51",
+                "6034c9e42d4f5a70"
+            ]
+        ]
+    },
+    {
+        "id": "4012312d042dec51",
+        "type": "function",
+        "z": "e58d7df5b51fa36d",
+        "name": "FILTER1",
+        "func": "\nif (msg.topic && msg.topic.includes('gtl/bridge/logging')) {\n    return null;\n}\n\nif (msg.topic && msg.topic.includes('gtl/bridge/logging')) {\n    return null;\n}\n\nif (!msg.topic || typeof msg.topic !== \"string\") {\n    return null;\n}\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 460,
+        "y": 860,
+        "wires": [
+            [
+                "2558aa6ba1fc87f5"
+            ]
+        ]
+    },
+    {
+        "id": "2558aa6ba1fc87f5",
+        "type": "function",
+        "z": "e58d7df5b51fa36d",
+        "name": "event-move-light",
+        "func": "if (msg.topic && msg.topic.startsWith(\"gtl/gtl/Biztonság/\") && msg.topic.includes(\"-Mozgás\")) {\n    const topicParts = msg.topic.split('/');\n    const devicePart = topicParts[3];\n    const room = devicePart.split('-')[0];\n    const targetTopic = `gtl/gtl/${room}/RGB-${room}/set`;\n\n    // Initialize cache\n    flow.set('motion_state_cache', flow.get('motion_state_cache') || {});\n    const cache = flow.get('motion_state_cache');\n\n    if (msg.payload.occupancy === true || msg.payload.occupancy === false) {\n        const newState = msg.payload.occupancy ? \"ON\" : \"OFF\";\n        const currentTime = Date.now();\n\n        // Check if state changed or if it's time to resend\n        if (cache[targetTopic]) {\n            const lastState = cache[targetTopic].state;\n            const lastTime = cache[targetTopic].timestamp;\n\n            // Skip repeating items within 5 seconds\n            if (lastState === newState && (currentTime - lastTime < 5000)) {\n                return null;\n            }\n        }\n\n        // Update cache\n        cache[targetTopic] = {\n            state: newState,\n            timestamp: currentTime\n        };\n        flow.set('motion_state_cache', cache);\n\n        return {\n            topic: targetTopic,\n            payload: { state: newState },\n            qos: 2,\n            retain: false\n        };\n    }\n}\n\nreturn null;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 660,
+        "y": 860,
+        "wires": [
+            [
+                "7e25cfa42b6fcf34",
+                "d8ab6d7d4182b766"
+            ]
+        ]
+    },
+    {
+        "id": "7e25cfa42b6fcf34",
+        "type": "mqtt out",
+        "z": "e58d7df5b51fa36d",
+        "name": "",
+        "topic": "",
+        "qos": "2",
+        "retain": "false",
+        "respTopic": "",
+        "contentType": "application/json",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "4644b114d998fd7b",
+        "x": 870,
+        "y": 860,
+        "wires": []
+    },
+    {
+        "id": "d8ab6d7d4182b766",
+        "type": "debug",
+        "z": "e58d7df5b51fa36d",
+        "name": "debug 1",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 880,
+        "y": 820,
+        "wires": []
+    },
+    {
+        "id": "6034c9e42d4f5a70",
+        "type": "debug",
+        "z": "e58d7df5b51fa36d",
+        "name": "debug 7",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 460,
+        "y": 820,
+        "wires": []
+    },
+    {
+        "id": "4644b114d998fd7b",
+        "type": "mqtt-broker",
+        "name": "",
+        "broker": "mqtt",
+        "port": "52888",
+        "clientid": "",
+        "autoConnect": true,
+        "usetls": false,
+        "protocolVersion": "5",
+        "keepalive": "5",
+        "cleansession": true,
+        "autoUnsubscribe": true,
+        "birthTopic": "",
+        "birthQos": "2",
+        "birthRetain": "true",
+        "birthPayload": "",
+        "birthMsg": {},
+        "closeTopic": "",
+        "closeQos": "0",
+        "closeRetain": "false",
+        "closePayload": "",
+        "closeMsg": {},
+        "willTopic": "",
+        "willQos": "0",
+        "willRetain": "false",
+        "willPayload": "",
+        "willMsg": {},
+        "userProps": "",
+        "sessionExpiry": ""
+    }
+]
