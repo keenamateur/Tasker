@@ -11,13 +11,13 @@ This flow integrates multiple home automation systems including:
 
 ### Node-RED Setup
 <div style="display: flex; gap: 20px;">
-  <img src="/docs/images/mios2http.png" alt="mios2http" width="95%"/>
+  <img src="docs/images/mios2http.png" alt="mios2http" width="95%"/>
 </div>
 
 ### Node-RED Plugins
 <div style="display: flex; gap: 20px;">
-  <img src="/docs/images/nr_plugin1.png" alt="Plugin 1" width="45%"/>
-  <img src="/docs/images/nr_plugin2.png" alt="Plugin 2" width="45%"/>
+  <img src="docs/images/nr_plugin1.png" alt="Plugin1" width="45%"/>
+  <img src="docs/images/nr_plugin2.png" alt="Plugin2" width="45%"/>
 </div>
 
 
@@ -106,4 +106,11 @@ graph LR
     I --> J[File/HTTP]
 ```
 
+## Prerequisites
 
+*   **Node-RED:** Installed and running.
+*   **Custom Nodes:**
+    *   `node-red-contrib-mios`: For reading data from the Vera/MIOS controller.
+    *   `node-red-contrib-stackhero-influxdb-v2`: For writing data to InfluxDB V2.
+    *   `node-red-contrib-join-joaoapps`: (Used in the flow, although the output wire is not connected, the node is present).
+*   **Vera/MIOS Controller:** Must be accessible on the network. The flow is configured for the `mios-server` named `gtlvera1` (IP `192.168.4.10`).
