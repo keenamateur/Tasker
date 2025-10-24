@@ -11,7 +11,7 @@ This flow integrates multiple home automation systems including:
 
 ### Node-RED Setup
 <div style="display: flex; gap: 20px;">
-  <img src="/docs/images/mios2http.png" alt="nodered" width="95%"/>
+  <img src="/docs/images/mios2http.png" alt="mios2http" width="95%"/>
 </div>
 
 ### Node-RED Plugins
