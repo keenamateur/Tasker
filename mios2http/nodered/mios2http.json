@@ -1,0 +1,869 @@
+[
+    {
+        "id": "276aa2ee5cf0893e",
+        "type": "tab",
+        "label": "MIOS",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "7eb6af79b05a3e21",
+        "type": "change",
+        "z": "276aa2ee5cf0893e",
+        "d": true,
+        "name": "device_status",
+        "rules": [
+            {
+                "t": "set",
+                "p": "con_ip",
+                "pt": "global",
+                "to": "payload",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 880,
+        "y": 80,
+        "wires": [
+            [
+                "b8652bf49b17df85"
+            ]
+        ]
+    },
+    {
+        "id": "71a0763e8875d640",
+        "type": "http request",
+        "z": "276aa2ee5cf0893e",
+        "d": true,
+        "name": "vera_ac",
+        "method": "GET",
+        "ret": "txt",
+        "paytoqs": "body",
+        "url": "",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [
+            {
+                "keyType": "Content-Type",
+                "keyValue": "",
+                "valueType": "application/json",
+                "valueValue": ""
+            }
+        ],
+        "x": 980,
+        "y": 640,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "52a1d64a91866046",
+        "type": "file",
+        "z": "276aa2ee5cf0893e",
+        "d": true,
+        "name": "write_con_ip",
+        "filename": "media/con_ip",
+        "filenameType": "str",
+        "appendNewline": false,
+        "createDir": true,
+        "overwriteFile": "true",
+        "encoding": "none",
+        "x": 470,
+        "y": 80,
+        "wires": [
+            [
+                "0a74aad2f883d664"
+            ]
+        ]
+    },
+    {
+        "id": "fee498488f2bf166",
+        "type": "mqtt in",
+        "z": "276aa2ee5cf0893e",
+        "d": true,
+        "name": "con_ip-mqtt:52888",
+        "topic": "client/con_ip",
+        "qos": "2",
+        "datatype": "auto-detect",
+        "broker": "4644b114d998fd7b",
+        "nl": false,
+        "rap": false,
+        "rh": "2",
+        "inputs": 0,
+        "x": 270,
+        "y": 80,
+        "wires": [
+            [
+                "52a1d64a91866046"
+            ]
+        ]
+    },
+    {
+        "id": "9f0bc763d847a255",
+        "type": "inject",
+        "z": "276aa2ee5cf0893e",
+        "d": true,
+        "name": "Inject IP",
+        "props": [],
+        "repeat": "90",
+        "crontab": "",
+        "once": true,
+        "onceDelay": 0.1,
+        "topic": "",
+        "x": 480,
+        "y": 40,
+        "wires": [
+            [
+                "0a74aad2f883d664"
+            ]
+        ]
+    },
+    {
+        "id": "0a74aad2f883d664",
+        "type": "file in",
+        "z": "276aa2ee5cf0893e",
+        "d": true,
+        "name": "read_con_ip",
+        "filename": "media/con_ip",
+        "filenameType": "str",
+        "format": "utf8",
+        "chunk": false,
+        "sendError": false,
+        "encoding": "utf8",
+        "allProps": false,
+        "x": 670,
+        "y": 80,
+        "wires": [
+            [
+                "7eb6af79b05a3e21"
+            ]
+        ]
+    },
+    {
+        "id": "a88ad3af82db4835",
+        "type": "function",
+        "z": "276aa2ee5cf0893e",
+        "d": true,
+        "name": "AOI-JOIN",
+        "func": "if (typeof msg.topic !== \"string\" || msg.topic.trim() === \"\") {\n    return null;\n}\n\nlet regex = /^([^:]+):([^:]+):([^:]+)$/;\n\nlet match = msg.topic.match(regex);\n\nif (match) {\n    let room = match[1];\n    let device = match[2];\n    let type = match[3];\n    let state = msg.payload;\n\n    // Allow only specific types\n    if (type !== \"Status\" && type !== \"LoadLevelStatus\" && type !== \"Tripped\" && type !== \"CurrentTemperature\") {\n        return null;\n    }\n\n    if (state === true) state = 1;\n    else if (state === false) state = 0;\n\n    // Creata joinMessage/structure\n    let joinMessage = `vera up=:=${room}=:=${device}=:=${state}`;\n\n    msg.payload = joinMessage;\n    msg.text = joinMessage;\n\n    return msg;\n\n} else {\n    return null;\n}",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 740,
+        "y": 440,
+        "wires": [
+            [
+                "6f71ceb29e9ebffa",
+                "2ba019cad9efa382"
+            ]
+        ]
+    },
+    {
+        "id": "2ca5b3d8b2421d64",
+        "type": "switch",
+        "z": "276aa2ee5cf0893e",
+        "name": "",
+        "property": "con_ip",
+        "propertyType": "global",
+        "rules": [
+            {
+                "t": "eq",
+                "v": "payload",
+                "vt": "msg"
+            },
+            {
+                "t": "eq",
+                "v": "192.0.0.2",
+                "vt": "str"
+            },
+            {
+                "t": "regex",
+                "v": "192.168|10",
+                "vt": "str",
+                "case": false
+            }
+        ],
+        "checkall": "false",
+        "repair": false,
+        "outputs": 3,
+        "x": 470,
+        "y": 700,
+        "wires": [
+            [],
+            [
+                "a88ad3af82db4835",
+                "18911eacfb61ad15"
+            ],
+            [
+                "726bcd36367c98ad",
+                "e00cc67b2a8d0f93",
+                "18911eacfb61ad15"
+            ]
+        ]
+    },
+    {
+        "id": "40a8c5ae97b16d36",
+        "type": "debug",
+        "z": "276aa2ee5cf0893e",
+        "d": true,
+        "name": "vera_ac",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 960,
+        "y": 600,
+        "wires": []
+    },
+    {
+        "id": "726bcd36367c98ad",
+        "type": "function",
+        "z": "276aa2ee5cf0893e",
+        "d": true,
+        "name": "vera_ac",
+        "func": "// Check if the topic is a string and not empty\nif (typeof msg.topic !== \"string\" || msg.topic.trim() === \"\") {\n    return null; // Ha nincs topic, ne küldjünk semmit\n}\n\n// Regex format: room:avdevicename:type\nlet regex = /^([^:]+):([^:]+):([^:]+)$/;\n\n// Check if the topic matches the regex\nlet match = msg.topic.match(regex);\n\nif (match) {\n    let room = match[1];\n    let avdevicename = match[2];\n    let type = match[3];\n    let avnewstatus = msg.payload;\n\n\n    // List of allowed rooms\n    const allowedRooms = [\"Nappali\", \"Konyha\", \"Fürdő\", \"Háló\", \"Terasz\", \"Biztonság\", \"Műhely\", \"Garázs\", \"Áram\", \"Szerver\", \"Szenzor\", \"Sátor\"];\n\n    // Only process if the room is one of the allowed rooms\n    if (!allowedRooms.includes(room)) {\n        return null; // Ha a szoba nem engedélyezett, ne küldjünk semmit\n    }\n\n    // Only process if the type is one of the allowed types\n    const allowedTypes = [\"Status\", \"LoadLevelStatus\"];\n    if (!allowedTypes.includes(type)) {\n        return null;\n    }\n    // If the device name contains \"Fali\" and the type is \"LoadLevelStatus\"\n    if (avdevicename.includes(\"Fali\") && type === \"LoadLevelStatus\") {\n        // Az érték megtartása\n        avnewstatus = parseFloat(avnewstatus);\n    }\n    // If the device name does not contain \"Fali\" and the type is \"LoadLevelStatus\"\n    else if (avdevicename.includes(\"Fali\") && type === \"Status\") {\n        // If the type is \"Status\" and the device name contains \"Fali\"\n        // we convert the boolean value to 1 or 0\n        if (avnewstatus === true) avnewstatus = 1;\n        else if (avnewstatus === false) avnewstatus = 0;\n    }\n    else if (type === \"Status\") {\n        if (avnewstatus === true) avnewstatus = 1;\n        else if (avnewstatus === false) avnewstatus = 0;\n    }\n    // If the type is \"LoadLevelStatus\" and the device name does not contain \"Fali\"\n    else if (type === \"Watts\" || type === \"Volts\" || type === \"Tripped\") {\n        avnewstatus = parseFloat(avnewstatus);\n    }\n    else {\n        return null;\n    }\n\n    // Port\n    let port = 1900;\n\n    // Get IP address from flow context or msg.payload \n\n    let ip = global.get(\"con_ip\"); // || msg.payload;  // If the IP is not in flow context, use msg.payload\n\n    if (!ip || typeof ip !== \"string\" || !ip.match(/^(\\d{1,3}\\.){3}\\d{1,3}$/)) {\n        return null; // If the IP is not valid, return null\n    }\n\n    // Create URL \n    let url = `http://${ip}:${port}`;\n\n    // New message\n    let newMsg = {\n        payload: {\n            room: room,\n            avdevicename: avdevicename,\n            avnewstatus: avnewstatus,\n            type: type  // Add type to payload ,as some Dimmer devices send \"LoadLevelStatus\" as \"Status\" \n        },\n        url: url  // URL\n    };\n\n    return newMsg;\n} else {\n    return null; // If regex does not match, return null\n}",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 740,
+        "y": 640,
+        "wires": [
+            [
+                "71a0763e8875d640",
+                "40a8c5ae97b16d36"
+            ]
+        ]
+    },
+    {
+        "id": "ad4e7c8dfba2ed22",
+        "type": "http request",
+        "z": "276aa2ee5cf0893e",
+        "d": true,
+        "name": "vera_security",
+        "method": "GET",
+        "ret": "txt",
+        "paytoqs": "body",
+        "url": "",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [
+            {
+                "keyType": "Content-Type",
+                "keyValue": "",
+                "valueType": "application/json",
+                "valueValue": ""
+            }
+        ],
+        "x": 970,
+        "y": 540,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "20a6effbe245afc2",
+        "type": "debug",
+        "z": "276aa2ee5cf0893e",
+        "d": true,
+        "name": "vera_security",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 970,
+        "y": 500,
+        "wires": []
+    },
+    {
+        "id": "e00cc67b2a8d0f93",
+        "type": "function",
+        "z": "276aa2ee5cf0893e",
+        "d": true,
+        "name": "vera_security",
+        "func": "\nif (typeof msg.topic !== \"string\" || msg.topic.trim() === \"\") {\n    return null;\n}\n\n// Regex az üzenetek feldolgozására\nlet regex = /^([^:]+):([^:]+):([^:]+)$/;\n\nlet match = msg.topic.match(regex);\n\nif (match) {\n    let room = match[1];\n    let avdevicename = match[2];\n    let type = match[3];\n    let avnewstatus = msg.payload;\n    \n    const allowedRooms = [\"Nappali\", \"Konyha\", \"Fürdő\", \"Háló\", \"Terasz\", \"Biztonság\", \"Műhely\", \"Garázs\", \"Áram\", \"Szerver\", \"Szenzor\", \"Sátor\"];\n\n    if (!allowedRooms.includes(room)) {\n        return null;\n    }\n\n    // Csak a megadott típusokat engedjük át\n    //const allowedTypes = [\"Status\", \"LoadLevelStatus\", \"Tripped\", \"CurrentTemperature\", \"CurrentHumidity\", \"Watts\", \"Volts\"];\n    //if (!allowedTypes.includes(type)) {\n    //    return null;\n    //}\n    // Csak a megadott típusokat engedjük át\n    const allowedTypes = [\"Tripped\"];\n    if (!allowedTypes.includes(type)) {\n        return null;\n    }\n    // Ha az eszköznév tartalmazza a \"Fali\" szót és a típus \"LoadLevelStatus\",\n    // akkor ezt használjuk az állapotként minden esetben\n    if (avdevicename.includes(\"Fali\") && type === \"LoadLevelStatus\") {\n        // Az érték megtartása\n        avnewstatus = parseFloat(avnewstatus);\n    } \n    \n    else if (type === \"Status\") {\n        if (avnewstatus === true) avnewstatus = 1;\n        else if (avnewstatus === false) avnewstatus = 0;\n    }\n    // Ha a típus \"Watts\" vagy \"Volts\", akkor is küldjük tovább\n    else if (type === \"Watts\" || type === \"Volts\" || type === \"Tripped\") {\n        avnewstatus = parseFloat(avnewstatus);\n    }\n    else {\n        return null;\n    }\n\n    // Port változó létrehozása\n    let port = 1901;\n\n    // IP cím meghatározása flow változóból\n    let ip = global.get(\"con_ip\");  // || msg.payload;  // Ha nincs flow változó, akkor msg.payload-ból vesszük\n\n    // Ellenőrizzük, hogy van-e érvényes IP-cím\n    if (!ip || typeof ip !== \"string\" || !ip.match(/^(\\d{1,3}\\.){3}\\d{1,3}$/)) {\n        return null; // Ha nincs érvényes IP, ne küldjünk semmit\n    }\n\n    // URL létrehozása\n    let url = `http://${ip}:${port}`;\n\n    // Az új üzenet objektum létrehozása\n    let newMsg = {\n        payload: {\n            room: room,\n            avdevicename: avdevicename,\n            avnewstatus: avnewstatus,\n            type: type  // Hozzáadjuk a típust is, hogy tudjuk kezelni a fogadó oldalon\n        },\n        url: url  // Dinamikus URL beállítása a HTTP Request node-hoz\n    };\n\n    return newMsg;\n} else {\n    return null;\n}",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 750,
+        "y": 540,
+        "wires": [
+            [
+                "ad4e7c8dfba2ed22",
+                "20a6effbe245afc2"
+            ]
+        ]
+    },
+    {
+        "id": "18911eacfb61ad15",
+        "type": "function",
+        "z": "276aa2ee5cf0893e",
+        "name": "vera_ac_influxdb",
+        "func": "// Function to convert Vera device messages to InfluxDB format\n\n// Validate input message\nif (typeof msg.topic !== \"string\" || msg.topic.trim() === \"\") {\n    return null;\n}\n\n// Parse the topic using regex\nconst topicRegex = /^([^:]+):([^:]+):([^:]+)$/;\nconst match = msg.topic.match(topicRegex);\n\nif (!match) {\n    return null;\n}\n\nconst [_, room, device, parameter] = match;\nlet value = msg.payload;\n\n// List of allowed rooms and parameters\nconst allowedRooms = [\"Nappali\", \"Sátor\", \"Konyha\", \"Fürdő\", \"Háló\", \"Terasz\",\n    \"Biztonság\", \"Műhely\", \"Garázs\", \"Áram\", \"Szerver\", \"Szenzor\"];\nconst allowedParameters = [\"Status\", \"LoadLevelStatus\", \"Tripped\"];\n\n// Validate room and parameter\nif (!allowedRooms.includes(room) || !allowedParameters.includes(parameter)) {\n    return null;\n}\n\n// Enhanced value conversion\nconst convertValue = (val, param) => {\n    // Handle boolean values\n    if (typeof val === 'boolean') {\n        return val ? 1 : 0;\n    }\n\n    // Handle string representations\n    if (typeof val === 'string') {\n        val = val.trim().toLowerCase();\n        if (val === 'true') return 1;\n        if (val === 'false') return 0;\n        if (val === 'on') return 1;\n        if (val === 'off') return 0;\n    }\n\n    // Convert to number for numeric parameters\n    const numericParams = [\"Watts\", \"Volts\", \"CurrentTemperature\", \"CurrentHumidity\",\n        \"LoadLevelStatus\", \"Amp\", \"KWHReading\", \"Light\", \"BatteryLevel\"];\n    if (numericParams.includes(param)) {\n        const num = parseFloat(val);\n        return isNaN(num) ? null : num;\n    }\n\n    return val;\n};\n\nvalue = convertValue(value, parameter);\n\n// Skip if we couldn't get a valid value\nif (value === null || value === undefined) {\n    return null;\n}\n\n// Create InfluxDB data structure\nconst timestamp = Date.now();\nconst measurement = \"vera_ac\";\n\n// Get previous device data from context\nconst previousData = context.get(device) || { fields: {} };\n\n// Prepare the data point\nconst dataPoint = {\n    measurement,\n    tags: {\n        room,\n        device\n    },\n    fields: {\n        ...previousData.fields,\n        [parameter]: value\n    },\n    timestamp\n};\n\n// Store current data in context for future messages\ncontext.set(device, dataPoint);\n\n// Prepare the InfluxDB payload\nconst output = {\n    bucket: 'veradata',\n    precision: 'ms',\n    data: [dataPoint]\n};\n\n// Add additional metadata if needed\nif (parameter === 'LoadLevelStatus' && device.includes('Fali')) {\n    output.data[0].fields['brightness'] = value;\n}\n\nif (parameter === 'Status') {\n    output.data[0].fields['power'] = value ? 'on' : 'off';\n}\n\nreturn { payload: output };",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 770,
+        "y": 840,
+        "wires": [
+            [
+                "c7a48c873fe19f2a",
+                "adff3864ebd2cd97"
+            ]
+        ]
+    },
+    {
+        "id": "adff3864ebd2cd97",
+        "type": "debug",
+        "z": "276aa2ee5cf0893e",
+        "name": "inf_vera_ac",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 970,
+        "y": 800,
+        "wires": []
+    },
+    {
+        "id": "a1b437b66f1f62f8",
+        "type": "http request",
+        "z": "276aa2ee5cf0893e",
+        "d": true,
+        "name": "request_mios_data",
+        "method": "GET",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "http://192.168.4.10:3480/data_request?id=lu_sdata&output_format=json",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 490,
+        "y": 220,
+        "wires": [
+            [
+                "d097e7c00156cf42"
+            ]
+        ]
+    },
+    {
+        "id": "9c1c3fa556ba3dcd",
+        "type": "file",
+        "z": "276aa2ee5cf0893e",
+        "d": true,
+        "name": "srv/vera_full.txt",
+        "filename": "media/vera_full.txt",
+        "filenameType": "str",
+        "appendNewline": true,
+        "createDir": false,
+        "overwriteFile": "true",
+        "encoding": "utf8",
+        "x": 900,
+        "y": 260,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "d097e7c00156cf42",
+        "type": "function",
+        "z": "276aa2ee5cf0893e",
+        "d": true,
+        "name": "vera_data_All",
+        "func": "\n\n// Main process\nfunction processVeraData(rawData) {\n    // Helper functions\n    const getCategoryName = (id) => {\n        const cat = (rawData.categories || []).find(c => c.id === id);\n        return cat ? cat.name : `Unknown (${id})`;\n    };\n\n    const getRoomName = (id) => {\n        const room = (rawData.rooms || []).find(r => r.id === id);\n        return room ? room.name : `Unknown (${id})`;\n    };\n\n    const parseNumber = (val) => {\n        if (val === \"\" || val === null || val === undefined) return null;\n        const num = parseFloat(val);\n        return isNaN(num) ? null : num;\n    };\n\n    // Process rooms\n    const rooms = (rawData.rooms || []).map(room => ({\n        id: room.id,\n        name: room.name,\n        section: room.section || null\n    }));\n\n    // Process scenes\n    const scenes = (rawData.scenes || []).map(scene => ({\n        id: scene.id,\n        name: scene.name,\n        room: getRoomName(scene.room),\n        roomId: scene.room,\n        active: scene.active === 1,\n        state: scene.state || null,\n        comment: scene.comment || \"\"\n    }));\n\n    // Process devices and sensors\n    const devices = [];\n    const sensors = {\n        temperature: [],\n        humidity: [],\n        light: [],\n        power: [],\n        motion: [],\n        door: []\n    };\n\n    (rawData.devices || []).forEach(device => {\n        // Base device info\n        const deviceInfo = {\n            id: device.id,\n            altId: device.altid || null,\n            name: device.name,\n            category: {\n                id: device.category,\n                name: getCategoryName(device.category)\n            },\n            subcategory: device.subcategory,\n            room: getRoomName(device.room),\n            roomId: device.room,\n            status: device.status || null,\n            state: device.state || null,\n            configured: device.configured === \"1\",\n            commFailure: device.commFailure === \"1\",\n            parent: device.parent || null,\n            comment: device.comment || \"\"\n        };\n\n        // Process measurements\n        const watts = parseNumber(device.watts);\n        const kwh = parseNumber(device.kwh);\n        const light = parseNumber(device.light);\n        const humidity = parseNumber(device.humidity);\n        const temperature = parseNumber(device.temperature);\n        const battery = parseNumber(device.batterylevel);\n        const level = parseNumber(device.level);\n\n        if (watts !== null) deviceInfo.watts = watts;\n        if (kwh !== null) deviceInfo.kwh = kwh;\n        if (light !== null) deviceInfo.light = light;\n        if (humidity !== null) deviceInfo.humidity = humidity;\n        if (temperature !== null) deviceInfo.temperature = temperature;\n        if (battery !== null) deviceInfo.battery = battery;\n\n        // Add level for dimmer devices (category 2)\n        if (device.category === 2 && level !== null) {\n            deviceInfo.level = level;\n        }\n\n        // Add to devices array\n        devices.push(deviceInfo);\n\n        // Organize sensor data\n        if (temperature !== null) {\n            sensors.temperature.push({\n                deviceId: device.id,\n                deviceName: device.name,\n                value: temperature,\n                unit: \"°C\",\n                timestamp: new Date().toISOString()\n            });\n        }\n\n        if (humidity !== null) {\n            sensors.humidity.push({\n                deviceId: device.id,\n                deviceName: device.name,\n                value: humidity,\n                unit: \"%\",\n                timestamp: new Date().toISOString()\n            });\n        }\n\n        if (light !== null) {\n            sensors.light.push({\n                deviceId: device.id,\n                deviceName: device.name,\n                value: light,\n                unit: \"lux\",\n                timestamp: new Date().toISOString()\n            });\n        }\n\n        if (watts !== null) {\n            sensors.power.push({\n                deviceId: device.id,\n                deviceName: device.name,\n                watts: watts,\n                kwh: kwh,\n                timestamp: new Date().toISOString()\n            });\n        }\n\n        // Special handling for motion and door sensors\n        if (device.category === 4) {\n            const sensorData = {\n                deviceId: device.id,\n                deviceName: device.name,\n                tripped: device.tripped === \"1\",\n                armed: device.armed === \"1\",\n                lastTrip: device.lasttrip || null,\n                battery: battery\n            };\n\n            if (device.subcategory === 1) { // Door sensors\n                sensors.door.push(sensorData);\n            } else if (device.subcategory === 3) { // Motion sensors\n                sensors.motion.push(sensorData);\n            }\n        }\n    });\n\n    // Return structured data\n    return {\n        metadata: {\n            timestamp: new Date().toISOString(),\n            veraVersion: rawData.version,\n            model: rawData.model,\n            serialNumber: rawData.serial_number,\n            dataVersion: rawData.dataversion\n        },\n        rooms: rooms,\n        scenes: scenes,\n        devices: devices,\n        sensors: sensors,\n        summary: {\n            totalRooms: rooms.length,\n            totalScenes: scenes.length,\n            totalDevices: devices.length,\n            activeScenes: scenes.filter(s => s.active).length,\n            activeDevices: devices.filter(d => d.status === \"1\").length\n        }\n    };\n}\n\n// Main execution\ntry {\n    const rawData = msg.payload;\n    msg.payload = processVeraData(rawData);\n} catch (error) {\n    node.error(\"Error processing Vera data: \" + error.message, msg);\n}\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 680,
+        "y": 220,
+        "wires": [
+            [
+                "9c1c3fa556ba3dcd",
+                "6d05218436786726"
+            ]
+        ]
+    },
+    {
+        "id": "4ab265717888d909",
+        "type": "debug",
+        "z": "276aa2ee5cf0893e",
+        "d": true,
+        "name": "vera_read_data",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1080,
+        "y": 180,
+        "wires": []
+    },
+    {
+        "id": "f55dfb6fbe6ac4bb",
+        "type": "mqtt in",
+        "z": "276aa2ee5cf0893e",
+        "d": true,
+        "name": "vera_read_data",
+        "topic": "read/data/vera",
+        "qos": "2",
+        "datatype": "auto-detect",
+        "broker": "4644b114d998fd7b",
+        "nl": false,
+        "rap": false,
+        "rh": "2",
+        "inputs": 0,
+        "x": 260,
+        "y": 220,
+        "wires": [
+            [
+                "a1b437b66f1f62f8"
+            ]
+        ]
+    },
+    {
+        "id": "7f090dec9cea8b9a",
+        "type": "http request",
+        "z": "276aa2ee5cf0893e",
+        "d": true,
+        "name": "vera_data_full_http",
+        "method": "use",
+        "ret": "txt",
+        "paytoqs": "body",
+        "url": "",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 1090,
+        "y": 220,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "6d05218436786726",
+        "type": "function",
+        "z": "276aa2ee5cf0893e",
+        "d": true,
+        "name": "preset_ip",
+        "func": "// Preapir for HTTP\nlet jsonData = msg.payload;\n\n// Port\nlet port = '1904';\n\n// Set IP \n//let ip = '10.10.10.2'; \nlet ip = global.get(\"con_ip\"); // || \"10.10.50.2\";\n\n// Create URL\nlet url = `http://${ip}:${port}`;\n\n// Create new message\nlet newMsg = {\n    payload: jsonData,\n    headers: {\n        \"Content-Type\": \"application/json\"\n    },\n    method: \"GET\", // set request type\n    url: url\n};\n\n// return new message\nreturn newMsg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 880,
+        "y": 220,
+        "wires": [
+            [
+                "4ab265717888d909",
+                "7f090dec9cea8b9a"
+            ]
+        ]
+    },
+    {
+        "id": "b8652bf49b17df85",
+        "type": "debug",
+        "z": "276aa2ee5cf0893e",
+        "d": true,
+        "name": "con_ip",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1070,
+        "y": 80,
+        "wires": []
+    },
+    {
+        "id": "1db5f1b004bc7232",
+        "type": "mios-in",
+        "z": "276aa2ee5cf0893e",
+        "name": "Nappali:AC",
+        "server": "dfaffd1ad684d9c7",
+        "item": "Nappali:AC",
+        "exact": false,
+        "x": 250,
+        "y": 560,
+        "wires": [
+            [
+                "2ca5b3d8b2421d64"
+            ]
+        ]
+    },
+    {
+        "id": "279c30db8aaf242e",
+        "type": "mios-in",
+        "z": "276aa2ee5cf0893e",
+        "name": "Konyha:AC",
+        "server": "dfaffd1ad684d9c7",
+        "item": "Konyha:AC",
+        "exact": false,
+        "x": 250,
+        "y": 500,
+        "wires": [
+            [
+                "2ca5b3d8b2421d64"
+            ]
+        ]
+    },
+    {
+        "id": "b3152baf76981c8e",
+        "type": "mios-in",
+        "z": "276aa2ee5cf0893e",
+        "name": "Fürdő",
+        "server": "dfaffd1ad684d9c7",
+        "item": "Fürdő:AC",
+        "exact": false,
+        "x": 270,
+        "y": 680,
+        "wires": [
+            [
+                "2ca5b3d8b2421d64"
+            ]
+        ]
+    },
+    {
+        "id": "c7eb7e87b9c08975",
+        "type": "mios-in",
+        "z": "276aa2ee5cf0893e",
+        "name": "Háló:AC",
+        "server": "dfaffd1ad684d9c7",
+        "item": "Háló:AC",
+        "exact": false,
+        "x": 260,
+        "y": 620,
+        "wires": [
+            [
+                "2ca5b3d8b2421d64"
+            ]
+        ]
+    },
+    {
+        "id": "8ec64cc45b387368",
+        "type": "mios-in",
+        "z": "276aa2ee5cf0893e",
+        "name": "Garázs",
+        "server": "dfaffd1ad684d9c7",
+        "item": "Garázs:AC",
+        "exact": false,
+        "x": 270,
+        "y": 920,
+        "wires": [
+            [
+                "2ca5b3d8b2421d64"
+            ]
+        ]
+    },
+    {
+        "id": "1417e802e1c0bc0e",
+        "type": "mios-in",
+        "z": "276aa2ee5cf0893e",
+        "name": "Műhely",
+        "server": "dfaffd1ad684d9c7",
+        "item": "Műhely:AC",
+        "exact": false,
+        "x": 270,
+        "y": 860,
+        "wires": [
+            [
+                "2ca5b3d8b2421d64"
+            ]
+        ]
+    },
+    {
+        "id": "7e3777ec0929628e",
+        "type": "mios-in",
+        "z": "276aa2ee5cf0893e",
+        "name": "Terasz",
+        "server": "dfaffd1ad684d9c7",
+        "item": "Terasz:AC",
+        "exact": false,
+        "x": 270,
+        "y": 800,
+        "wires": [
+            [
+                "2ca5b3d8b2421d64"
+            ]
+        ]
+    },
+    {
+        "id": "f220f9cf879e00a5",
+        "type": "mios-in",
+        "z": "276aa2ee5cf0893e",
+        "name": "Biztonság",
+        "server": "dfaffd1ad684d9c7",
+        "item": "Biztonság:",
+        "exact": false,
+        "x": 260,
+        "y": 740,
+        "wires": [
+            [
+                "2ca5b3d8b2421d64"
+            ]
+        ]
+    },
+    {
+        "id": "1f76ccd0f224dc67",
+        "type": "mios-in",
+        "z": "276aa2ee5cf0893e",
+        "name": "Áram:AC",
+        "server": "dfaffd1ad684d9c7",
+        "item": "Áram:AC",
+        "exact": false,
+        "x": 260,
+        "y": 980,
+        "wires": [
+            [
+                "2ca5b3d8b2421d64"
+            ]
+        ]
+    },
+    {
+        "id": "7a61293e53257009",
+        "type": "mios-in",
+        "z": "276aa2ee5cf0893e",
+        "name": "",
+        "server": "dfaffd1ad684d9c7",
+        "item": "",
+        "exact": false,
+        "x": 510,
+        "y": 940,
+        "wires": [
+            [
+                "3264ecb303440967"
+            ]
+        ]
+    },
+    {
+        "id": "d115e2eb03a2f231",
+        "type": "mios-in",
+        "z": "276aa2ee5cf0893e",
+        "name": "Sátor:AC",
+        "server": "dfaffd1ad684d9c7",
+        "item": "Sátor:AC",
+        "exact": false,
+        "x": 260,
+        "y": 440,
+        "wires": [
+            [
+                "2ca5b3d8b2421d64"
+            ]
+        ]
+    },
+    {
+        "id": "c7a48c873fe19f2a",
+        "type": "Stackhero-InfluxDB-v2-write",
+        "z": "276aa2ee5cf0893e",
+        "server": "8d9e262ae3ae230d",
+        "name": "inf_vera_ac",
+        "x": 970,
+        "y": 840,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "a8bb87dabe30fbf5",
+        "type": "Stackhero-InfluxDB-v2-write",
+        "z": "276aa2ee5cf0893e",
+        "server": "8d9e262ae3ae230d",
+        "name": "vera_full",
+        "x": 960,
+        "y": 940,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "6f71ceb29e9ebffa",
+        "type": "join-message",
+        "z": "276aa2ee5cf0893e",
+        "d": true,
+        "name": "vera_ac",
+        "text": "",
+        "title": "",
+        "url": "",
+        "notificationicon": "",
+        "joinConfig": "ddf6c62463d695e5",
+        "x": 980,
+        "y": 440,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "eaa0ee54532fad14",
+        "type": "inject",
+        "z": "276aa2ee5cf0893e",
+        "d": true,
+        "name": "test",
+        "props": [],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "x": 270,
+        "y": 180,
+        "wires": [
+            [
+                "a1b437b66f1f62f8"
+            ]
+        ]
+    },
+    {
+        "id": "2ba019cad9efa382",
+        "type": "debug",
+        "z": "276aa2ee5cf0893e",
+        "d": true,
+        "name": "join",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 970,
+        "y": 400,
+        "wires": []
+    },
+    {
+        "id": "3264ecb303440967",
+        "type": "function",
+        "z": "276aa2ee5cf0893e",
+        "name": "influxdb",
+        "func": "// Function to convert Vera device messages to InfluxDB V2 format\n\n// List of allowed rooms and parameters (esetérzékeny módon tartjuk, ahogy a topicból jön!)\nconst allowedRooms = [\n    \"Nappali\", \"Sátor\", \"Konyha\", \"Fürdő\", \"Háló\", \"Terasz\",\n    \"Biztonság\", \"Műhely\", \"Garázs\", \"Áram\", \"Szerver\", \"Szenzor\"\n];\n\n// List of allowed parameters to save (ami a topic harmadik része)\nconst allowedParameters = [\n    \"Status\", \"LoadLevelStatus\", \"Tripped\", \"Watts\", \"Volts\", \"CurrentTemperature\",\n    \"CurrentHumidity\", \"Amp\", \"KWHReading\", \"Light\", \"BatteryLevel\", \"KWH\" // Kiegészítve a logok alapján\n];\n\n// Enhanced value conversion helper function\nconst convertValue = (val, param) => {\n    // 1. Numerikus paraméterek ellenőrzése\n    const numericParams = [\"Watts\", \"Volts\", \"CurrentTemperature\", \"CurrentHumidity\",\n        \"LoadLevelStatus\", \"Amp\", \"KWHReading\", \"Light\", \"BatteryLevel\", \"KWH\"];\n\n    if (numericParams.includes(param)) {\n        // Próbáljuk lebegőpontos számmá konvertálni (a legtöbb Vera mérés stringként jön)\n        const num = parseFloat(val);\n        // Csak akkor adjuk vissza a számot, ha érvényes\n        if (!isNaN(num)) return num;\n    }\n\n    // 2. Logikai/állapot értékek kezelése (Status, Tripped stb.)\n    if (typeof val === 'boolean') {\n        return val ? 1 : 0;\n    }\n\n    if (typeof val === 'string') {\n        const trimmed = val.trim().toLowerCase();\n        if (trimmed === 'true' || trimmed === 'on') return 1;\n        if (trimmed === 'false' || trimmed === 'off') return 0;\n\n        // 3. Ha még mindig string, de számként van mentve (pl. \"12.34\" vagy \"1\")\n        const num = parseFloat(trimmed);\n        if (numericParams.includes(param) && !isNaN(num)) return num;\n\n        // 4. \"Log\" paraméter kezelése (az Ön logjában volt: \"68,50,135,...\" - ne próbáljuk számmá tenni)\n        if (param === 'Log') return val;\n    }\n\n    // Ha egyik konverzió sem működik, vagy ha nem numerikus/állapot paraméter\n    return null;\n};\n\n// --- Fő Végrehajtási Blokkolás ---\ntry {\n    // 1. Alapvető bemeneti ellenőrzés\n    if (typeof msg.topic !== \"string\" || msg.topic.trim() === \"\" || msg.payload === null || msg.payload === undefined) {\n        return null;\n    }\n\n    // 2. Topic elemzés (Regex a tisztább feldolgozásért)\n    const topicRegex = /^([^:]+):([^:]+):([^:]+)$/;\n    const match = msg.topic.match(topicRegex);\n\n    if (!match) {\n        node.warn(`Vera: Topic format incorrect: ${msg.topic}`);\n        return null;\n    }\n\n    const [_, room, device, parameter] = match;\n\n    // 3. Szűrés (Esetérzékeny összehasonlítás a listával)\n    if (!allowedRooms.includes(room.trim()) || !allowedParameters.includes(parameter.trim())) {\n        // node.warn(`Vera: Filtering out ${room.trim()}:${parameter.trim()}`);\n        return null;\n    }\n\n    // 4. Érték konvertálása\n    let value = convertValue(msg.payload, parameter.trim());\n\n    // Skip ha nem kaptunk érvényes értéket (pl. egy nem-szám string, ami nem Status/Log)\n    if (value === null || value === undefined) {\n        return null;\n    }\n\n    // 5. InfluxDB V2 Adatstruktúra Építése\n    const timestamp = Date.now();\n    const measurement = \"vera_metrics\"; // Általános mérési név\n\n    // Lekéri az eszköz korábbi adatait a flow kontextusból a tag-ek/mezők összevonásához\n    const contextKey = `vera_${device.trim()}`;\n    const previousData = context.get(contextKey) || { fields: {} };\n\n    // Adatpont előkészítése\n    const dataPoint = {\n        measurement,\n        tags: {\n            room: room.trim(),\n            device: device.trim()\n        },\n        fields: {\n            // Összevonjuk a korábbi mezőket az újjal\n            ...previousData.fields,\n            [parameter.trim()]: value\n        },\n        timestamp\n    };\n\n    // Mentés a kontextusba a következő üzenethez\n    context.set(contextKey, dataPoint);\n\n    // 6. InfluxDB V2 Plugin kimeneti formátum\n    const output = {\n        bucket: 'veradata', // Adatbázis/Bucket név\n        precision: 'ms',\n        data: [dataPoint]\n    };\n\n    // 7. Különleges mezők hozzáadása (az Ön eredeti kódja alapján)\n    if (parameter.trim() === 'LoadLevelStatus' && device.includes('Fali')) {\n        output.data[0].fields['brightness'] = value;\n    }\n\n    if (parameter.trim() === 'Status') {\n        output.data[0].fields['power'] = value === 1 ? 'on' : 'off';\n    }\n\n    // A Node-RED InfluxDB V2 csomópont a msg.payload-ot várja\n    return { payload: output };\n\n} catch (error) {\n    // Hiba kezelése (ha a kód futás közben hibázik)\n    node.error(\"Error processing Vera single update: \" + error.message, msg);\n    return null; // A hiba elkerülése a folyamatban\n}",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 740,
+        "y": 940,
+        "wires": [
+            [
+                "a8bb87dabe30fbf5"
+            ]
+        ]
+    },
+    {
+        "id": "4644b114d998fd7b",
+        "type": "mqtt-broker",
+        "name": "",
+        "broker": "mqtt",
+        "port": "52888",
+        "clientid": "",
+        "autoConnect": true,
+        "usetls": false,
+        "protocolVersion": "5",
+        "keepalive": "5",
+        "cleansession": true,
+        "autoUnsubscribe": true,
+        "birthTopic": "",
+        "birthQos": "2",
+        "birthRetain": "true",
+        "birthPayload": "",
+        "birthMsg": {},
+        "closeTopic": "",
+        "closeQos": "0",
+        "closeRetain": "false",
+        "closePayload": "",
+        "closeMsg": {},
+        "willTopic": "",
+        "willQos": "0",
+        "willRetain": "false",
+        "willPayload": "",
+        "willMsg": {},
+        "userProps": "",
+        "sessionExpiry": ""
+    },
+    {
+        "id": "dfaffd1ad684d9c7",
+        "type": "mios-server",
+        "name": "gtlvera1",
+        "host": "192.168.4.10",
+        "port": 3480
+    },
+    {
+        "id": "8d9e262ae3ae230d",
+        "type": "Stackhero-InfluxDB-v2-Server",
+        "name": "",
+        "host": "influxdb",
+        "port": "8086",
+        "tls": false
+    },
+    {
+        "id": "ddf6c62463d695e5",
+        "type": "join-config",
+        "name": "NodeRed",
+        "register": false
+    },
+    {
+        "id": "5213bfb0f9f735d1",
+        "type": "global-config",
+        "env": [],
+        "modules": {
+            "node-red-contrib-mios": "0.2.0",
+            "node-red-contrib-stackhero-influxdb-v2": "1.0.4",
+            "node-red-contrib-join-joaoapps": "1.2.4"
+        }
+    }
+]
