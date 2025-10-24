@@ -1,4 +1,4 @@
-# **Node-RED Flow: Home Automation Integration System**
+# **Node-RED Flow: MIOS to HTTP **
 
 ## **Overview**
 This flow integrates multiple home automation systems including:
@@ -106,23 +106,4 @@ graph LR
     I --> J[File/HTTP]
 ```
 
----
 
-## **Key Features**
-1. **Dynamic IP Handling**
-   - Survives IP changes via MQTT updates
-   - Persists across restarts
-
-2. **Error-Resistant Processing**
-   - Type validation
-   - Null checks
-   - Regex topic verification
-
-3. **Modular Design**
-   - Separated by functional area
-   - Clear data transformation pipeline
-
-4. **Extensive Logging**
-   - Device states
-   - Energy metrics
-   - Environmental sensors
