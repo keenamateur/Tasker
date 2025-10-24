@@ -6,7 +6,7 @@ This Node-RED flow processes status updates from Zigbee2MQTT (Z2M) via MQTT and 
 
 ### Node-RED Setup
 <div style="display: flex; gap: 20px;">
-  <img src="/images/zgb2http.png" alt="zgb2http" width="95%"/>
+  <img src="/docs/images/zgb2http.png" alt="zgb2http" width="95%"/>
 </div>
 
 ## Features
