@@ -2,10 +2,10 @@
 
 ## **Overview**
 This flow integrates multiple home automation systems including:
-- **Vera Edge** home controller (via MIOS protocol)
+- **Vera** home controller (via MIOS protocol)
 - **MQTT** messaging
 - **InfluxDB** time-series database
-- **HTTP APIs** for device control
+- **HTTP APIs** for status report and device control
 - **Join** notification service
 
 
