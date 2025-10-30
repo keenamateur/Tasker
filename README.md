@@ -1,24 +1,11 @@
 ### Tasker Repostory
 
-# **Node-RED Flow: MIOS to HTTP **
+# Node-RED Flow: MIOS to HTTP
+This Node-RED flow processes status updates MIOS via HTTP and translates them into custom HTTP GET requests for a connected home automation system. It also handles initial IP configuration and includes a simple motion-based lighting automation.
 
-## **Overview**
-This flow integrates multiple home automation systems including:
-- **Vera** home controller (via MIOS protocol)
-- **MQTT** messaging
-- **InfluxDB** time-series database
-- **HTTP APIs** for status report and device control
-- **Join** notification service
+# Zigbee2Mqtt2HTTP Node-RED Flow
+This Node-RED flow processes status updates from Zigbee2MQTT (Z2M) via MQTT and translates them into custom HTTP GET requests for a connected home automation system. It also handles initial IP configuration and includes a simple motion-based lighting automation.
 
 
-### Node-RED Setup
-<div style="display: flex; gap: 20px;">
-  <img src="docs/images/mios2http.png" alt="mios2http" width="95%"/>
-</div>
 
-### Node-RED Plugins
-<div style="display: flex; gap: 20px;">
-  <img src="docs/images/nr_plugin1.png" alt="Plugin1" width="45%"/>
-  <img src="docs/images/nr_plugin2.png" alt="Plugin2" width="45%"/>
-</div>
 
