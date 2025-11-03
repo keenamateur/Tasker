@@ -1,0 +1,57 @@
+if (!msg.topic || typeof msg.topic !== "string") return null;
+
+const topicParts = msg.topic.split('/');
+if (topicParts.length < 3 || topicParts[0] !== "gtl") return null;
+
+const room = topicParts[2];
+const avdevicename = topicParts[3];
+
+const allowedRooms = ["Biztonág", "MOVE", "DOOR", "GTL", "Nappali", "Konyha", "Fürdő", "Háló", "Terasz", "Biztonság", "Műhely", "Garázs", "Áram", "Szerver", "Sátor", "Raktár"];
+if (!allowedRooms.includes(room)) return null;
+
+if (!msg.payload || typeof msg.payload !== "object") return null;
+
+// Humidity és temperature szenzor
+if (msg.payload.humidity !== undefined || msg.payload.temperature !== undefined) {
+    msg.sensorData = {
+        room: room,
+        avdevicename: avdevicename,
+        type: "sensor",
+        humidity: msg.payload.humidity,
+        temperature: msg.payload.temperature,
+        battery: msg.payload.battery
+    };
+    return msg;
+}
+
+// Contact szenzor (ajtó/ablak érzékelő)
+if (msg.payload.contact !== undefined) {
+    const statusContact = msg.payload.contact === true ? "Zárva" : "Nyitva";
+
+    msg.sensorData = {
+        room: room,
+        avdevicename: avdevicename,
+        type: "contact",
+        avnewstatus: statusContact,
+        battery: msg.payload.battery
+    };
+    return msg;
+}
+
+// Mozgásérzékelő Motionsensor
+
+if (msg.payload.occupancy !== undefined) {
+    const statusMotion = msg.payload.occupancy === true ? "detected" : "cleared";
+
+    msg.sensorData = {
+        room: room,
+        avdevicename: avdevicename,
+        type: "motion",
+        avnewstatus: statusMotion,
+        battery: msg.payload.battery,
+        voltage: msg.payload.voltage
+    };
+    return msg;
+}
+
+return null;
