@@ -1,0 +1,94 @@
+if (!msg.payload || !Array.isArray(msg.payload)) {
+    return null;
+}
+
+const allowedRooms = ["GTL", "Nappali", "Konyha", "Fürdő", "Háló", "Terasz", "Biztonság", "Műhely", "Garázs", "Áram", "Szerver", "Sátor"];
+const devices = [];
+
+msg.payload.forEach(device => {
+    if (!device.friendly_name || !device.supported) return;
+    
+    
+    const match = device.friendly_name.match(/^([^\/]+)\/(.+)$/);
+    
+   // const match = device.friendly_name.match(/^\/(.+)$/);
+   // const match = device.friendly_name.match(/^([^_]+)_(.+)$/);
+    if (!match) return;
+
+    const room = match[1];
+    const deviceName = match[2];
+
+    if (!allowedRooms.includes(room)) return;
+
+    const type = device.type || "Router";
+    const status = device.available ? "online" : "offline";
+a
+    let rgbValue = null;
+    if (device.definition?.exposes) {
+        const hasColor = device.definition.exposes.some(e =>
+            e.property === "color" || e.name === "color_xy" ||
+            (e.features && e.features.some(f => f.name && f.name.includes("color")))
+        );
+        if (hasColor) rgbValue = "color_supported";
+    }
+
+    // Endpoint-ok kinyerése
+    const endpoints = [];
+    if (device.definition?.exposes) {
+        device.definition.exposes.forEach(expose => {
+            if (expose.endpoint && expose.features) {
+                endpoints.push({
+                    endpoint: expose.endpoint,
+                    type: expose.type,
+                    features: expose.features.map(f => f.name || f.property)
+                });
+            }
+        });
+    }
+
+    // Fő eszköz hozzáadása with  full name
+    devices.push({
+        room: room,
+        name: device.friendly_name,
+        type: type,
+        status: status,
+        rgb: rgbValue,
+        endpoints: endpoints,
+        endpoint_count: endpoints.length,
+        is_main_device: true
+    });
+
+    // Endpoint-ok külön entitásként hozzáadása
+    endpoints.forEach(endpoint => {
+        const endpointName = `${device.friendly_name}/${endpoint.endpoint}`; // "room_devicename/l1"
+        devices.push({
+            room: room,
+            name: endpointName,
+            type: `${endpoint.type}_${type}`,
+            status: status,
+            rgb: rgbValue,
+            endpoints: [endpoint],
+            endpoint_count: 1,
+            is_endpoint: true,
+            parent_device: device.friendly_name  // Zentral device name
+        });
+    });
+});
+
+return {
+    payload: {
+        timestamp: new Date().toISOString(),
+        devices: devices,
+        total_devices: devices.length,
+        summary: {
+            by_room: devices.reduce((acc, device) => {
+                acc[device.room] = (acc[device.room] || 0) + 1;
+                return acc;
+            }, {}),
+            by_type: devices.reduce((acc, device) => {
+                acc[device.type] = (acc[device.type] || 0) + 1;
+                return acc;
+            }, {})
+        }
+    }
+};
